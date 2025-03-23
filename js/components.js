@@ -4,7 +4,7 @@ Classes
 
 class Bus
 {
-	constructor(line0, line1, line2, line3, line4, line5, line6, line7, header)
+	constructor(line0, line1, line2, line3, line4, line5, line6, line7, header, clockLocation)
 	{
 		this.line = [];
 		this.line[0] = line0;
@@ -17,6 +17,7 @@ class Bus
 		this.line[7] = line7;
 		this.header = header;
 		this.setValue(0);
+		this.clock = new Clock($(clockLocation));
 	}
 	
 	setValue(val)
@@ -76,7 +77,7 @@ class Bus
 
 class Clock
 {
-	constructor(target)
+	constructor(target, bus)
 	{
 		this.downstream = [];
 		this.speed = 8; //Initalise at 8Hz
@@ -95,15 +96,15 @@ class Clock
 		target.append(this.clockdiv);
 		$("#clockcontrol").click(function(){
 			if(this.checked)
-				myclock.clockStart();
+				bus.Clock.clockStart();
 			else
-				myclock.clockStop();
+				bus.Clock.clockStop();
 		});
 		$("#stepbutton").mousedown(function(){
-			myclock.pulse(myclock);
+			bus.Clock.pulse(bus.Clock);
 		});
 		$("#stepbutton").mouseup(function(){
-			myclock.pulse(myclock);
+			bus.Clock.pulse(bus.Clock);
 		});
 		$("#countreset").click(function(){
 			$("#clockcount")[0].textContent = "00000";
@@ -121,7 +122,7 @@ class Clock
 				value: 8,
 				step: 1,
 				slide: function( event, ui ) {
-				  myclock.setSpeed(ui.value);
+					bus.Clock.setSpeed(ui.value);
 				}
 			  });
 		});
@@ -472,27 +473,27 @@ END functions
 
 
 // Testing code
-var mybus = 0;
+var SystemBus = 0;
 function Test()
 {
-	mybus = new Bus($("#bus_1"), $("#bus_2"), $("#bus_3"), $("#bus_4"), $("#bus_5"), $("#bus_6"), $("#bus_7"), $("#bus_8"), $("#bus_header"));
+	SystemBus = new Bus($("#bus_1"), $("#bus_2"), $("#bus_3"), $("#bus_4"), $("#bus_5"), $("#bus_6"), $("#bus_7"), $("#bus_8"), $("#bus_header"), ".left_col");
 	//for(let i = 0; i < 20; i++)
 	//	mybus.setValue(i);
-	myclock = new Clock($(".left_col"));
-	myclock.clockConnect(testcallback);
-	regA = new Register($(".right_col"), "REGISTER A", mybus);
+	//myclock = new Clock($(".left_col"));
+	SystemBus.Clock.clockConnect(testcallback);
+	regA = new Register($(".right_col"), "REGISTER A", SystemBus);
 }
 
 function testcallback(edge)
 {
 	if(edge)
 	{
-		mybus.setValue(mybus.getValue() + 1);
+		SystemBus.setValue(SystemBus.getValue() + 1);
 	}
 	else
 	{
-		if(mybus.getValue() == 255)
-			mybus.setValue(0);
+		if(SystemBus.getValue() == 255)
+			SystemBus.setValue(0);
 	}
 }
 
