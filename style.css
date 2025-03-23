@@ -1,0 +1,428 @@
+/* 
+Reset CSS
+from https://www.joshwcomeau.com/css/custom-css-reset/
+*/
+
+/* 1. Use a more-intuitive box-sizing model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Remove default margin */
+* {
+  margin: 0;
+}
+
+body {
+  /* 3. Add accessible line-height */
+  line-height: 1.5;
+  /* 4. Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 5. Improve media defaults */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* 6. Inherit fonts for form controls */
+input, button, textarea, select {
+  font: inherit;
+}
+
+/* 7. Avoid text overflows */
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+/* 8. Improve line wrapping */
+p {
+  text-wrap: pretty;
+}
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+/*
+  9. Create a root stacking context
+*/
+#root, #__next {
+  isolation: isolate;
+}
+/*
+END Reset CSS
+*/
+/*
+Base page styling
+*/
+body
+{
+	padding: 20px;
+}
+/*
+div
+{
+	border: 1px solid black;
+}*/
+.master
+{
+	display: grid;
+	grid-template-columns: 3fr 1fr 3fr;
+	gap: 10px;
+	padding: 10px;
+	background-color: blue;
+}
+
+.master > div
+{
+	display: grid;
+	background-color: #dedede;
+}
+
+h2
+{
+  background-color: #999999;
+  padding: 10px;
+}
+
+/*
+END base page
+*/
+
+/*
+Generic component styling
+*/
+.componentheader
+{
+  position: relative;
+  /*background-color:#666666;*/
+  background-image: linear-gradient(to right, rgba(102,102,102,1), rgba(102,102,102,0), rgba(102,102,102,0));
+  width: 100%;
+  font-weight: bolder;
+  font-size: larger;
+  padding: 10px;
+  vertical-align: middle;
+}
+.componentbody
+{
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+  align-content: center;
+}
+.comp_clock > .componentbody
+{
+  grid-template-columns: auto auto auto;
+}
+.comp_register > .componentbody
+{
+  grid-template-columns: auto auto auto auto auto auto auto auto auto;
+}
+
+/*
+END generic component
+*/
+
+/*
+Rounded switch styling
+https://www.w3schools.com/howto/howto_css_switch.asp
+*/
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/*
+Switch customisations
+*/
+.clockswitch
+{
+  float: right;
+  margin-top: -3px;
+  margin-right: 10px;
+}
+
+/*
+END rounded switch
+*/
+
+/*
+LED styling
+*/
+
+.led
+{
+	width: 30px;
+	height: 30px;
+	border-radius:15px;
+}
+
+.led_on
+{
+	background-color: red;
+}
+
+.led_off
+{
+	background-color: white;
+}
+
+/*
+END led
+*/
+
+/*
+IN/OUT styling
+*/
+.rx_from_bus, .tx_to_bus
+{
+  font-size: 20;
+  font-weight: bold;
+  color: #777;
+}
+
+.rx_from_bus_active
+{
+  color: green;
+  text-shadow: 0px 0px 10px green;
+}
+
+.tx_to_bus_active
+{
+  color: red;
+  text-shadow: 0px 0px 10px red;
+}
+
+.arrowed {
+	position: relative;
+	margin: 10px 30px 20px 30px;
+	/*border: 1px solid rgba(0,0,0,0.25);*/
+  float: left;
+}
+
+.arrow-r {
+	/* more triangle */
+	height: 10px; width: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	border-width: 3px 3px 0 0;
+	transform: rotate(45deg);
+}
+
+.arrow-l {
+	/* more triangle */
+	height: 10px; width: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	border-width: 3px 3px 0 0;
+	transform: rotate(-135deg);
+}
+
+.arrow-r:before, .arrow-r:after, .arrow-l:before, .arrow-l:after {
+	content: '';
+	position: absolute;
+	display: block;
+	height: 10px; width: 10px;
+	border-width: 3px 3px 0 0;
+}
+
+.arrow-r:before, .arrow-l:before {
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-width: 3px 3px 0 0;
+	/* top - distance minus border */
+	top: 7px; left: -10px;
+}
+
+.arrow-r:after, .arrow-l:after {
+	border: 1px solid rgba(255, 255, 255, 1);
+	border-width: 3px 3px 0 0;
+	/* top - distance plus border */
+	top: -13px; left: 10px;
+}
+
+
+
+/*
+END IN/OUT
+*/
+
+/*
+7 segment display styling
+https://codepen.io/dylanbeattie/pen/PoXmemL
+*/
+
+.sevensegment {
+  display: inline-block;
+  margin: 10px;
+}
+/* Default eight = all segments OFF */
+.sevensegment > div, .sevensegment > span {
+  position: relative;
+  background: white;
+}
+.sevensegment > span {
+  display: inline-block;
+  width: 10px;
+  height: 50px;
+  clip-path: polygon(0 5px, 5px 0px, 10px 5px, 10px 45px, 5px 50px, 0px 45px, 0 5px);
+}
+.sevensegment > div {
+  clip-path: polygon(0 5px, 5px 0px, 45px 0px, 50px 5px, 45px 10px, 5px 10px, 0 5px);
+  width: 50px;
+  height: 10px;
+  position: relative;
+  left: 6px;
+  margin: 0;
+}
+.sevensegment > div {  top: 3px; }
+.sevensegment > span + div { top: -4px; margin-bottom: -8px; }
+.sevensegment > div + span + span { left: 42px;  }
+
+/*
+END 7 segment display
+*/
+
+/*
+Bus styling
+*/
+.bus_col
+{
+	grid-template-rows: 30px auto;
+}
+
+#bus_header
+{
+	grid-column: 1 / span 8;
+	height: 25px;
+	text-align: center;
+	font-weight: bold;
+	padding: 10px;
+	border: none;
+}
+
+.bus_line
+{
+	grid-row: 2;
+	margin: 2px;
+	border-radius: 5px;
+	margin-top: 10px;
+}
+
+.bus_line_off
+{
+	background-color: white;
+}
+
+.bus_line_on
+{
+	background-color: red;
+}
+/*
+END bus
+*/
+
+/*
+Timer styling
+*/
+
+
+#stepbutton
+{
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+  position: relative;
+  width: 150px;
+  height: 150px;
+  background-color: red;
+  border-radius: 75px;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bolder;
+  border: solid black 3px;
+  box-shadow: 5px #666666;
+  line-height: 150px;
+  box-shadow: 4.8px 9.6px 9.6px hsl(0deg 0% 0% / 0.35);
+  cursor: pointer;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 32px;
+}
+#stepbutton:hover
+{
+  box-shadow: 8.0px 16.0px 16.0px hsl(0deg 0% 0% / 0.25);
+  cursor: pointer;
+  margin-top: 0px;
+  margin-left: 0px;
+  margin-right: 10px;
+}
+#stepbutton:active
+{
+  box-shadow: 0.8px 1.6px 1.6px hsl(0deg 0% 0% / 0.48);
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 0px;
+}
+
+/*
+END Timer
+*/
