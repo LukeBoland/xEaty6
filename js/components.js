@@ -33,16 +33,15 @@ class Bus
 		}
 		else
 		{
-			this.bus_value = val;
+			this.busValue = val;
 			this.calculateBusLine();
 		}
-		return this.bus_value;
+		return this.busValue;
 	}
 	
 	calculateBusLine()
 	{
-		let val = (this.bus_value >>> 0).toString(2).padStart(8, "0");
-		this.bus_line = val.split("");
+		this.busLine = ToBinaryArray(this.busValue, 8);
 		this.showBusLine();
 	}
 	
@@ -50,7 +49,7 @@ class Bus
 	{
 		for(let i=0; i < 8; i++)
 		{
-			if(this.bus_line[i] == 1)
+			if(this.busLine[i] == 1)
 			{
 				$(this.line[i]).addClass("bus_line_on");
 				$(this.line[i]).removeClass("bus_line_off");
@@ -66,12 +65,12 @@ class Bus
 	
 	valString()
 	{
-		return this.bus_value + " - 0x" + (this.bus_value >>> 0).toString(16) + " - 0b" + (this.bus_value >>> 0).toString(2).padStart(8,"0");
+		return this.busValue + " - 0x" + (this.busValue >>> 0).toString(16) + " - 0b" + ToBinaryString(this.busValue, 8);
 	}
 	
 	getValue()
 	{
-		return this.bus_value;
+		return this.busValue;
 	}
 }
 
@@ -382,11 +381,11 @@ class Register
 			this.LEDS[i] = $("<div class='led led_off'>&nbsp;</div>");
 			this.component.children(".componentbody").append(this.LEDS[i]);
 		}
-		let valDisp = $("<div style='grid-row: 1 / span 3; grid-column:9;'><fieldset style='width: 250px'><legend>Value</legend</fieldset></div><div class='rx_from_bus' style='grid-column:1 / span 3;'><div class='arrowed'><div class='arrow-r'></div></div>IN</div><div class='tx_to_bus' style='grid-column:1 / span 3;'><div class='arrowed'><div class='arrow-l'></div></div>OUT</div>");
-		this.valDispHundreds = new SevenSegmentDisplay(valDisp.children("fieldset"));
-		this.valDispTens = new SevenSegmentDisplay(valDisp.children("fieldset"));
-		this.valDispUnits = new SevenSegmentDisplay(valDisp.children("fieldset"));
-		this.component.children(".componentbody").append(valDisp);
+		this.valDisp = $("<div style='grid-row: 1 / span 3; grid-column:9;'><fieldset style='width: 250px'><legend>Value</legend</fieldset></div><div class='rx_from_bus' style='grid-column:1 / span 3;'><div class='arrowed'><div class='arrow-r'></div></div>IN</div><div class='tx_to_bus' style='grid-column:1 / span 3;'><div class='arrowed'><div class='arrow-l'></div></div>OUT</div>");
+		this.valDispHundreds = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
+		this.valDispTens = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
+		this.valDispUnits = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
+		this.component.children(".componentbody").append(this.valDisp);
 		target.append(this.component);
 		this.setValue(this.storedVal);
 		this.mode = 0;
@@ -394,16 +393,25 @@ class Register
 
 	setMode(tmpmode)
 	{
+		console.log(this.valDisp);
 		switch(tmpmode)
 		{
 			case -1: // rx data from bus
 				this.mode = -1;
+				console.log(this.valDisp[1]);
+				$(this.valDisp[1]).addClass("rx_from_bus_active");
+				$(this.valDisp[2]).removeClass("tx_to_bus_active");
 				break;
 			case 0: // disconnected from bus
 				this.mode = 0;
+				$(this.valDisp[1]).removeClass("rx_from_bus_active");
+				$(this.valDisp[2]).removeClass("tx_to_bus_active");
 				break;
 			case 1: // tx data to bus
 				this.mode = 1;
+				console.log(this.valDisp[2]);
+				$(this.valDisp[2]).addClass("tx_to_bus_active");
+				$(this.valDisp[1]).removeClass("rx_from_bus_active");
 				break;
 			default:
 				return false;
@@ -413,8 +421,7 @@ class Register
 
 	calculateLEDs()
 	{
-		let val = (this.storedVal >>> 0).toString(2).padStart(8, "0");
-		this.ledLine = val.split("");
+		this.ledLine = ToBinaryArray(this.storedVal, 8);
 		this.showLEDLine();
 	}
 	
@@ -473,35 +480,106 @@ class Register
 	}
 }
 
-/*
-END classes
-*/
-
-/*
-Functions
-*/
-
-function CreateComponent(addClass)
+class ALU
 {
-	return $("<div class='component " + addClass + "'><div class='componentheader'></div><div class='componentbody'></div></div>");
+	constructor(target, systembus)
+	{
+		this.component = new CreateComponent("comp_ALU");
+		this.storedVal = 0;
+		this.ledLine = [];
+		this.LEDS = [];
+		this.systembus = systembus;
+		this.component.children(".componentheader")[0].textContent = "ALU";
+		for(let i=0; i<8; i++)
+		{
+			this.LEDS[i] = $("<div class='led led_off'>&nbsp;</div>");
+			this.component.children(".componentbody").append(this.LEDS[i]);
+		}
+		this.valDisp = $("<div style='grid-row: 1 / span 3; grid-column:9;'><fieldset style='width: 250px'><legend>Value</legend</fieldset></div><div class='tx_to_bus' style='grid-column:1 / span 3;'><div class='arrowed'><div class='arrow-l'></div></div>OUT</div>");
+		this.valDispHundreds = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
+		this.valDispTens = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
+		this.valDispUnits = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
+		this.component.children(".componentbody").append(this.valDisp);
+		this.modeDisp = $("<div style='grid-column: 4 / span 3;'><fieldset><legend>Mode</legend><label><input type='radio' name='alu_mode' checked='checked' /> Addition</label><br /><label><input type='radio' name='alu_mode' /> Subtraction</label></fieldset></div>");
+		this.component.children(".componentbody").append(this.modeDisp);
+		target.append(this.component);
+	}
+
+	setPrimaryInput(reg)
+	{
+		this.primaryRegister = reg;
+	}
+
+	setSecondaryInput(reg)
+	{
+		this.secondaryRegister = reg;
+	}
+
+	calculateLEDs()
+	{
+		this.ledLine = ToBinaryArray(this.storedVal, 8);
+		this.showLEDLine();
+	}
+	
+	showLEDLine()
+	{
+		for(let i=0; i < 8; i++)
+		{
+			if(this.ledLine[i] == 1)
+			{
+				$(this.LEDS[i]).addClass("bus_line_on");
+				$(this.LEDS[i]).removeClass("bus_line_off");
+			}
+			else
+			{
+				$(this.LEDS[i]).addClass("bus_line_off");
+				$(this.LEDS[i]).removeClass("bus_line_on");
+			}
+		}
+	}
+
+	setValue()
+	{
+		this.storedVal = this.primaryRegister.getValue() + this.secondaryRegister.getValue();
+		this.calculateLEDs();
+		this.valDispHundreds.setValue(Math.floor(this.storedVal / 100));
+		this.valDispTens.setValue(Math.floor(this.storedVal / 10) % 10);
+		this.valDispUnits.setValue(this.storedVal % 10);
+		return this.storedVal;
+	}
+
+	getValue()
+	{
+		return this.storedVal;
+	}
+
+	rxValue()
+	{
+		this.setValue(this.systembus.getValue());
+	}
+
+	txValue()
+	{
+		this.systembus.setValue(this.getValue());
+	}
 }
 
 /*
-END functions
+END classes
 */
-
 
 // Testing code
 var SystemBus = 0;
 function Test()
 {
 	SystemBus = new Bus($("#bus_1"), $("#bus_2"), $("#bus_3"), $("#bus_4"), $("#bus_5"), $("#bus_6"), $("#bus_7"), $("#bus_8"), $("#bus_header"), ".left_col");
-	//for(let i = 0; i < 20; i++)
-	//	mybus.setValue(i);
-	//myclock = new Clock($(".left_col"));
 	console.log(SystemBus.Clock);
 	SystemBus.Clock.clockConnect(testcallback);
 	regA = new Register($(".right_col"), "REGISTER A", SystemBus);
+	aluA = new ALU($(".right_col"), SystemBus);
+	regB = new Register($(".right_col"), "REGISTER B", SystemBus);
+	aluA.setPrimaryInput(regA);
+	aluA.setSecondaryInput(regB);
 }
 
 function testcallback(edge)
