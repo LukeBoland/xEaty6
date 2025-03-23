@@ -84,8 +84,9 @@ class Clock
 		this.clockdiv = CreateComponent('comp_clock');
 		this.clockdiv.children(".componentheader")[0].textContent = "CLOCK MODULE";
 		this.clockdiv.children(".componentheader").append($("<div class='led led_off' style='float: right; margin-top: -1px;' id='clockled'>&nbsp;</div>"));
-		this.btn_switch = $("<label class='switch clockswitch'>Clock: <input type='checkbox' id='clockcontrol'><span class='slider round'></span></label>");
+		this.btn_switch = $("<label id='clockswitch' class='switch clockswitch'>Clock: <input type='checkbox' id='clockcontrol'><span class='slider round'></span></label>");
 		this.clockdiv.children(".componentheader").append(this.btn_switch);
+		this.clockdiv.children(".componentheader").append($("<div id='halt' style='float: right; margin-top: -1px; margin-right: 10px; color: red;'><button id='clockreset' style='margin-right:10px'>Reset</button>SYSTEM HALTED</div>"));
 		this.clockdiv.children(".componentbody").append($("<div id='stepbutton'>Step</div>"));
 		let speedDisp = $("<div><fieldset style='width: 220px'><legend>Speed (Hz)</legend</fieldset></div>");
 		this.clockdiv.children(".componentbody").append($("<div><fieldset style='width: 137px;'><legend>Clock Counter</legend><h2 id='clockcount'>00000</h2><button id='countreset' style='margin-top: 10px;'>Reset Counter</button></fieldset></div>"));
@@ -98,7 +99,7 @@ class Clock
 			if(this.checked)
 				SystemBus.Clock.clockStart();
 			else
-			SystemBus.Clock.clockStop();
+				SystemBus.Clock.clockStop();
 		});
 		$("#stepbutton").mousedown(function(){
 			SystemBus.Clock.pulse(SystemBus.Clock);
@@ -126,6 +127,10 @@ class Clock
 				}
 			  });
 		});
+		$("#clockreset").click(function(){
+			SystemBus.Clock.clockReset();
+		});
+		$("#halt").hide();
 		this.active = false;
 	}
 	
@@ -186,6 +191,20 @@ class Clock
 	getSpeed()
 	{
 		return this.speed;
+	}
+
+	systemHalt()
+	{
+		this.clockStop();
+		$("#clockswitch").hide();
+		$("#halt").show();
+		$("#clockcontrol").prop( "checked", false );
+	}
+
+	clockReset()
+	{
+		$("#clockswitch").show();
+		$("#halt").hide();
 	}
 }
 

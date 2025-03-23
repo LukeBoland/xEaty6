@@ -232,6 +232,24 @@ END led
 */
 
 /*
+System halt message
+*/
+
+#halt {
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+/*
+END System Halt
+*/
+
+/*
 IN/OUT styling
 */
 .rx_from_bus, .tx_to_bus
