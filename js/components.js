@@ -17,7 +17,7 @@ class Bus
 		this.line[7] = line7;
 		this.header = header;
 		this.setValue(0);
-		this.clock = new Clock($(clockLocation));
+		this.Clock = new Clock($(clockLocation));
 	}
 	
 	setValue(val)
@@ -77,7 +77,7 @@ class Bus
 
 class Clock
 {
-	constructor(target, bus)
+	constructor(target)
 	{
 		this.downstream = [];
 		this.speed = 8; //Initalise at 8Hz
@@ -96,15 +96,15 @@ class Clock
 		target.append(this.clockdiv);
 		$("#clockcontrol").click(function(){
 			if(this.checked)
-				bus.Clock.clockStart();
+				SystemBus.Clock.clockStart();
 			else
-				bus.Clock.clockStop();
+			SystemBus.Clock.clockStop();
 		});
 		$("#stepbutton").mousedown(function(){
-			bus.Clock.pulse(bus.Clock);
+			SystemBus.Clock.pulse(SystemBus.Clock);
 		});
 		$("#stepbutton").mouseup(function(){
-			bus.Clock.pulse(bus.Clock);
+			SystemBus.Clock.pulse(SystemBus.Clock);
 		});
 		$("#countreset").click(function(){
 			$("#clockcount")[0].textContent = "00000";
@@ -122,7 +122,7 @@ class Clock
 				value: 8,
 				step: 1,
 				slide: function( event, ui ) {
-					bus.Clock.setSpeed(ui.value);
+					SystemBus.Clock.setSpeed(ui.value);
 				}
 			  });
 		});
@@ -480,6 +480,7 @@ function Test()
 	//for(let i = 0; i < 20; i++)
 	//	mybus.setValue(i);
 	//myclock = new Clock($(".left_col"));
+	console.log(SystemBus.Clock);
 	SystemBus.Clock.clockConnect(testcallback);
 	regA = new Register($(".right_col"), "REGISTER A", SystemBus);
 }
