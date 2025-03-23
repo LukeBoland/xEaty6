@@ -486,6 +486,7 @@ class ALU
 	{
 		this.component = new CreateComponent("comp_ALU");
 		this.storedVal = 0;
+		this.mode = true; // true for addition, false for subtraction
 		this.ledLine = [];
 		this.LEDS = [];
 		this.systembus = systembus;
@@ -515,6 +516,22 @@ class ALU
 		this.secondaryRegister = reg;
 	}
 
+	setMode(mode)
+	{
+		this.mode = mode;
+		if(mode)
+		{
+			$(this.modeDisp[0].children[0].children[1].children[0]).prop( "checked", true );
+			$(this.modeDisp[0].children[0].children[3].children[0]).prop( "checked", false );
+			console.log($(this.modeDisp[0].children[0].children[1].children[0]));
+		}
+		else
+		{
+			$(this.modeDisp[0].children[0].children[1].children[0]).prop( "checked", false );
+			$(this.modeDisp[0].children[0].children[3].children[0]).prop( "checked", true );
+		}
+	}
+
 	calculateLEDs()
 	{
 		this.ledLine = ToBinaryArray(this.storedVal, 8);
@@ -540,7 +557,10 @@ class ALU
 
 	setValue()
 	{
-		this.storedVal = this.primaryRegister.getValue() + this.secondaryRegister.getValue();
+		if(this.mode)
+			this.storedVal = this.primaryRegister.getValue() + this.secondaryRegister.getValue();
+		else
+			this.storedVal = this.primaryRegister.getValue() - this.secondaryRegister.getValue();
 		this.calculateLEDs();
 		this.valDispHundreds.setValue(Math.floor(this.storedVal / 100));
 		this.valDispTens.setValue(Math.floor(this.storedVal / 10) % 10);
@@ -551,11 +571,6 @@ class ALU
 	getValue()
 	{
 		return this.storedVal;
-	}
-
-	rxValue()
-	{
-		this.setValue(this.systembus.getValue());
 	}
 
 	txValue()
