@@ -28,3 +28,28 @@ function generateUUID() { // Public Domain/MIT from https://stackoverflow.com/qu
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
 }
+
+var selectedRAM = false;
+
+function EditAddress(element)
+{
+    if(!SystemBus.Clock.getStatus())
+    {
+        console.log(element);
+        //element[0].textContent = 90;
+        selectedRAM = element;
+        console.log(selectedRAM);
+        $("#ram_value")[0].value = selectedRAM[0].textContent;
+        $("#memory_edit").modal();
+    }
+    else
+        return false;
+}
+
+function UpdateAddress()
+{
+    console.log($("#ram_value")[0].value);
+    selectedRAM[0].textContent = $("#ram_value")[0].value;
+    $.modal.close();
+    selectedRAM = false;
+}

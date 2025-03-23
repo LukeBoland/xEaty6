@@ -205,6 +205,11 @@ class Clock
 		$("#clockswitch").show();
 		$("#halt").hide();
 	}
+
+	getStatus()
+	{
+		return this.active;
+	}
 }
 
 class SevenSegmentDisplay
@@ -579,6 +584,24 @@ class ALU
 	}
 }
 
+class RAM
+{
+	constructor(target, systembus, size)
+	{
+		this.systembus = systembus;
+		this.component = CreateComponent('comp_ram');
+		this.component.children(".componentheader")[0].textContent = "ROM";
+		let startAddress = 0;
+		this.dataTable = $("<div><table></table></div>");
+		for(let i=0; i<size; i += 8)
+		{
+			$(this.dataTable[0].children[0]).append($("<tr><td class='ram_header'>0x" + i.toString(16).padStart(2,"0") + "</td><td id='ram_" + i.toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+1).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+2).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+3).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+4).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+5).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+6).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+7).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td></tr>"));
+		}
+		this.component.children(".componentbody").append(this.dataTable);
+		target.append(this.component);
+	}
+}
+
 /*
 END classes
 */
@@ -595,6 +618,7 @@ function Test()
 	regB = new Register($(".right_col"), "REGISTER B", SystemBus);
 	aluA.setPrimaryInput(regA);
 	aluA.setSecondaryInput(regB);
+	ram = new RAM($(".left_col"), SystemBus, 255);
 }
 
 function testcallback(edge)

@@ -5,11 +5,18 @@
 		<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
 		<script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"></script> 
 		<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+		<!-- jQuery Modal -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
 		<script type="text/javascript" src="js/functions.js"></script>
 		<script type="text/javascript" src="js/components.js"></script>
 	</head>
 	<body>
-	
+	<div class="memory_edit modal" id="memory_edit" style="display:none;">
+		<h3>Edit Address</h3>
+		<p><label>Value:</label><input type="text" id="ram_value" />
+		<button onclick="UpdateAddress();">Save</button></p>
+	</div>
 	<div class="master"> <!-- Master container -->
 		<div class="left_col"></div> <!-- Left component column -->
 		<div class="bus_col">

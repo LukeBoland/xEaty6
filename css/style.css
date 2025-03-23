@@ -250,6 +250,31 @@ END System Halt
 */
 
 /*
+ROM styling
+*/
+
+.comp_ram > .componentbody > div > table > tr > td
+{
+  border: 1px solid black;
+  width: 50px;
+}
+
+.comp_ram > .componentbody > div
+{
+  height: 200px;
+  overflow-y: scroll;
+}
+
+.ram_header
+{
+  font-weight: bold;
+}
+
+/*
+END ROM
+*/
+
+/*
 IN/OUT styling
 */
 .rx_from_bus, .tx_to_bus
