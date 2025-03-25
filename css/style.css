@@ -253,21 +253,36 @@ END System Halt
 ROM styling
 */
 
-.comp_ram > .componentbody > div > table > tr > td
+.comp_rom > .componentbody > div > table > tr > td
 {
   border: 1px solid black;
   width: 50px;
 }
 
-.comp_ram > .componentbody > div
+.comp_rom > .componentbody > div
 {
   height: 200px;
   overflow-y: scroll;
 }
 
-.ram_header
+.rom_header
 {
   font-weight: bold;
+}
+
+.readROM
+{
+  background-color: green;
+}
+
+.selectROM
+{
+  background-color: yellow;
+}
+
+.writeROM
+{
+  background-color: red;
 }
 
 /*

@@ -372,22 +372,26 @@ class SevenSegmentDisplay
 
 class Register
 {
-	constructor(target, regTitle, systembus)
+	constructor(target, regTitle, systembus, size)
 	{
 		this.component = CreateComponent("comp_register");
 		this.regTitle = regTitle;
 		this.storedVal = 0;
 		this.ledLine = [];
+		this.size = size;
+		this.maxvalue = Math.pow(2, size) - 1;
 		this.LEDS = [];
 		this.systembus = systembus;
 		this.component.children(".componentheader")[0].textContent = this.regTitle;
-		for(let i=0; i<8; i++)
+		for(let i=0; i<size; i++)
 		{
 			this.LEDS[i] = $("<div class='led led_off'>&nbsp;</div>");
 			this.component.children(".componentbody").append(this.LEDS[i]);
 		}
 		this.valDisp = $("<div style='grid-row: 1 / span 3; grid-column:9;'><fieldset style='width: 250px'><legend>Value</legend</fieldset></div><div class='rx_from_bus' style='grid-column:1 / span 3;'><div class='arrowed'><div class='arrow-r'></div></div>IN</div><div class='tx_to_bus' style='grid-column:1 / span 3;'><div class='arrowed'><div class='arrow-l'></div></div>OUT</div>");
-		this.valDispHundreds = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
+		if(this.maxvalue > 99)
+			this.valDispHundreds = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
+		if(this.maxvalue > 9)
 		this.valDispTens = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
 		this.valDispUnits = new SevenSegmentDisplay(this.valDisp.children("fieldset"));
 		this.component.children(".componentbody").append(this.valDisp);
@@ -398,7 +402,6 @@ class Register
 
 	setMode(tmpmode)
 	{
-		console.log(this.valDisp);
 		switch(tmpmode)
 		{
 			case -1: // rx data from bus
@@ -420,19 +423,18 @@ class Register
 				break;
 			default:
 				return false;
-
 		}
 	}
 
 	calculateLEDs()
 	{
-		this.ledLine = ToBinaryArray(this.storedVal, 8);
+		this.ledLine = ToBinaryArray(this.storedVal, this.size);
 		this.showLEDLine();
 	}
 	
 	showLEDLine()
 	{
-		for(let i=0; i < 8; i++)
+		for(let i=0; i < this.size; i++)
 		{
 			if(this.ledLine[i] == 1)
 			{
@@ -449,12 +451,12 @@ class Register
 
 	setValue(val)
 	{
-		if(val > 255 || val < 0 || !Number.isInteger(val))
+		if(val > this.maxvalue || val < 0 || !Number.isInteger(val))
 		{
-			if(val > 255)
-				alert(this.regTitle + " || 8-bit error: numbers larger than 255 do not exist, " + val + " encountered");
+			if(val > this.maxvalue)
+				alert(this.regTitle + " || " + this.size + "-bit error: numbers larger than " + Math.pow(2,this.size)-1 + " do not exist, " + val + " encountered");
 			if(val < 0)
-				alert(this.regTitle + " || 8-bit error: numbers larger than 255 do not exist, " + val + " encountered");
+				alert(this.regTitle + " || " + this.size + "-bit error: numbers smaller than 0 do not exist, " + val + " encountered");
 			if(!Number.isInteger(val))
 				alert(this.regTitle + " can only take integer values, " + val + " encountered");
 		}
@@ -462,8 +464,10 @@ class Register
 		{
 			this.storedVal = val;
 			this.calculateLEDs();
-			this.valDispHundreds.setValue(Math.floor(val / 100));
-			this.valDispTens.setValue(Math.floor(val / 10)%10);
+			if(this.maxvalue > 99)
+				this.valDispHundreds.setValue(Math.floor(val / 100));
+			if(this.maxvalue > 9)
+				this.valDispTens.setValue(Math.floor(val / 10)%10);
 			this.valDispUnits.setValue(val%10);
 		}
 		return this.storedVal;
@@ -483,6 +487,11 @@ class Register
 	{
 		this.systembus.setValue(this.getValue());
 	}
+
+	incValue()
+	{
+		this.setValue(this.storedVal + 1);
+	}
 }
 
 class ALU
@@ -494,6 +503,8 @@ class ALU
 		this.mode = true; // true for addition, false for subtraction
 		this.ledLine = [];
 		this.LEDS = [];
+		this.primaryRegister = false;
+		this.secondaryRegister = false;
 		this.systembus = systembus;
 		this.component.children(".componentheader")[0].textContent = "ALU";
 		for(let i=0; i<8; i++)
@@ -514,11 +525,21 @@ class ALU
 	setPrimaryInput(reg)
 	{
 		this.primaryRegister = reg;
+		if(this.secondaryRegister)
+		{
+			this.setValue();
+			this.calculateLEDs();
+		}
 	}
 
 	setSecondaryInput(reg)
 	{
 		this.secondaryRegister = reg;
+		if(this.primaryRegister)
+		{
+			this.setValue();
+			this.calculateLEDs();
+		}
 	}
 
 	setMode(mode)
@@ -584,21 +605,78 @@ class ALU
 	}
 }
 
-class RAM
+class ROM
 {
 	constructor(target, systembus, size)
 	{
 		this.systembus = systembus;
-		this.component = CreateComponent('comp_ram');
+		this.addressRegister = new Register(target, "ADDRESS REGISTER", systembus, (size-1).toString(2).length);
+		this.component = CreateComponent('comp_rom');
 		this.component.children(".componentheader")[0].textContent = "ROM";
 		let startAddress = 0;
-		this.dataTable = $("<div><table></table></div>");
+		this.size = size;
+		this.dataTable = $("<div><table id='rom'></table></div>");
 		for(let i=0; i<size; i += 8)
 		{
-			$(this.dataTable[0].children[0]).append($("<tr><td class='ram_header'>0x" + i.toString(16).padStart(2,"0") + "</td><td id='ram_" + i.toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+1).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+2).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+3).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+4).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+5).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+6).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='ram_" + (i+7).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td></tr>"));
+			$(this.dataTable[0].children[0]).append($("<tr><td class='rom_header'>0x" + i.toString(16).padStart(2,"0") + "</td><td id='rom_" + i.toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='rom_" + (i+1).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='rom_" + (i+2).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='rom_" + (i+3).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='rom_" + (i+4).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='rom_" + (i+5).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='rom_" + (i+6).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td><td id='rom_" + (i+7).toString(16).padStart(2,"0") + "' ondblclick='EditAddress($(this))'>00</td></tr>"));
 		}
 		this.component.children(".componentbody").append(this.dataTable);
+		$(this.addressRegister.valDisp[1]).hide();
+		$(this.addressRegister.valDisp[2]).hide();
 		target.append(this.component);
+		this.previousAddress = false;
+	}
+
+
+	selectAddress(address)
+	{
+		if(address <= this.size)
+		{
+			this.addressRegister.setValue(address);
+			$("#rom_" + address.toString(16).padStart(2, "0")).addClass("selectROM");
+			$("#rom_" + this.previousAddress).removeClass("readROM");
+			$("#rom_" + this.previousAddress).removeClass("writeROM");
+			$("#rom_" + this.previousAddress).removeClass("selectROM");
+			console.log(this.previousAddress);
+			this.previousAddress = address.toString(16).padStart(2, "0");
+		}
+		else
+		{
+			console.log("Memory Address " + address + " out of bounds");
+			return false;
+		}
+		return true;
+	}
+
+	readAddress(address)
+	{
+		$("#rom_" + this.previousAddress).removeClass("readROM");
+		$("#rom_" + this.previousAddress).removeClass("selectROM");
+		$("#rom_" + this.previousAddress).removeClass("writeROM");
+		$("#rom_" + address.toString(16).padStart(2, "0")).addClass("readROM");
+		this.previousAddress = address.toString(16).padStart(2, "0");
+		$("#rom_" + address.toString(16).padStart(2, "0"))[0].scrollIntoView();
+		return parseInt($("#rom_" + address.toString(16).padStart(2, "0"))[0].textContent);
+	}
+
+	writeAddress(address, value)
+	{
+		if(value >= 0 && value <= 255)
+		{
+			$("#rom_" + this.previousAddress).removeClass("readROM");
+			$("#rom_" + this.previousAddress).removeClass("selectROM");
+			$("#rom_" + this.previousAddress).removeClass("writeROM");
+			$("#rom_" + address.toString(16).padStart(2, "0")).addClass("writeROM");
+			this.previousAddress = address.toString(16).padStart(2, "0");
+			$("#rom_" + address.toString(16).padStart(2, "0"))[0].scrollIntoView();
+			$("#rom_" + address.toString(16).padStart(2, "0"))[0].textContent = value.toString(16).padStart(2, "0");
+			return $("#rom_" + address.toString(16).padStart(2, "0"))[0].textContent;
+		}
+		else
+		{
+			console.log("8-bit error: " + value + " is outside of bounds")
+			return false;
+		}
 	}
 }
 
@@ -613,12 +691,12 @@ function Test()
 	SystemBus = new Bus($("#bus_1"), $("#bus_2"), $("#bus_3"), $("#bus_4"), $("#bus_5"), $("#bus_6"), $("#bus_7"), $("#bus_8"), $("#bus_header"), ".left_col");
 	console.log(SystemBus.Clock);
 	SystemBus.Clock.clockConnect(testcallback);
-	regA = new Register($(".right_col"), "REGISTER A", SystemBus);
+	regA = new Register($(".right_col"), "REGISTER A", SystemBus, 8);
 	aluA = new ALU($(".right_col"), SystemBus);
-	regB = new Register($(".right_col"), "REGISTER B", SystemBus);
+	regB = new Register($(".right_col"), "REGISTER B", SystemBus, 8);
 	aluA.setPrimaryInput(regA);
 	aluA.setSecondaryInput(regB);
-	ram = new RAM($(".left_col"), SystemBus, 255);
+	rom = new ROM($(".left_col"), SystemBus, 16);
 }
 
 function testcallback(edge)
