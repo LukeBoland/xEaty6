@@ -696,6 +696,8 @@ function Test()
 	regA = new Register($(".right_col"), "REGISTER A", SystemBus, 8);
 	aluA = new ALU($(".right_col"), SystemBus);
 	regB = new Register($(".right_col"), "REGISTER B", SystemBus, 8);
+	display = new Register($(".right_col"), "DISPLAY MODULE", SystemBus, 8);
+	$(this.display.valDisp[2]).hide();
 	aluA.setPrimaryInput(regA);
 	aluA.setSecondaryInput(regB);
 	rom = new ROM($(".left_col"), SystemBus, 16);
