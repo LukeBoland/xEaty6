@@ -454,11 +454,12 @@ class Register
 		if(val > this.maxvalue || val < 0 || !Number.isInteger(val))
 		{
 			if(val > this.maxvalue)
-				alert(this.regTitle + " || " + this.size + "-bit error: numbers larger than " + Math.pow(2,this.size)-1 + " do not exist, " + val + " encountered");
+				console.log(this.regTitle + " || " + this.size + "-bit error: numbers larger than " + Math.pow(2,this.size)-1 + " do not exist, " + val + " encountered");
 			if(val < 0)
-				alert(this.regTitle + " || " + this.size + "-bit error: numbers smaller than 0 do not exist, " + val + " encountered");
+				console.log(this.regTitle + " || " + this.size + "-bit error: numbers smaller than 0 do not exist, " + val + " encountered");
 			if(!Number.isInteger(val))
-				alert(this.regTitle + " can only take integer values, " + val + " encountered");
+				console.log(this.regTitle + " can only take integer values, " + val + " encountered");
+			return false;
 		}
 		else
 		{
@@ -485,12 +486,12 @@ class Register
 
 	txValue()
 	{
-		this.systembus.setValue(this.getValue());
+		return this.systembus.setValue(this.getValue());
 	}
 
 	incValue()
 	{
-		this.setValue(this.storedVal + 1);
+		return this.setValue(this.storedVal + 1);
 	}
 }
 
@@ -691,6 +692,7 @@ function Test()
 	SystemBus = new Bus($("#bus_1"), $("#bus_2"), $("#bus_3"), $("#bus_4"), $("#bus_5"), $("#bus_6"), $("#bus_7"), $("#bus_8"), $("#bus_header"), ".left_col");
 	console.log(SystemBus.Clock);
 	SystemBus.Clock.clockConnect(testcallback);
+	pc = new Register($(".right_col"), "PROGRAM COUNTER", SystemBus, 4);
 	regA = new Register($(".right_col"), "REGISTER A", SystemBus, 8);
 	aluA = new ALU($(".right_col"), SystemBus);
 	regB = new Register($(".right_col"), "REGISTER B", SystemBus, 8);
