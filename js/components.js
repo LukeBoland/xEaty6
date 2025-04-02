@@ -1,4 +1,11 @@
 /*
+Constants
+*/
+const IN = -1;
+const DC = 0;
+const OUT = 1;
+
+/*
 Classes
 */
 
@@ -17,9 +24,24 @@ class Bus
 		this.line[7] = line7;
 		this.header = header;
 		this.setValue(0);
+		this.endPoints = [];
 		this.Clock = new Clock($(clockLocation));
 	}
+
+	pulse()
+	{
+		let val = 0;
+		for(let i=0; i < this.endPoints.length; i++)
+			val = val | this.endPoints[i].getValue();
+		this.setValue(val);
+	}
 	
+	registerConnection(conn)
+	{
+		this.endPoints.push(conn);
+		console.log("Bus registration added: " + conn.regTitle);
+	}
+
 	setValue(val)
 	{
 		if(val > 255 || val < 0 || !Number.isInteger(val))
@@ -378,6 +400,7 @@ class Register
 		this.regTitle = regTitle;
 		this.storedVal = 0;
 		this.ledLine = [];
+		this.bufferVal = 0;
 		this.size = size;
 		this.maxvalue = Math.pow(2, size) - 1;
 		this.LEDS = [];
@@ -397,25 +420,27 @@ class Register
 		this.component.children(".componentbody").append(this.valDisp);
 		target.append(this.component);
 		this.setValue(this.storedVal);
+		systembus.registerConnection(this);
 		this.mode = 0;
 	}
 
-	setMode(tmpmode)
+	setMode(tmpmode = DC)
 	{
+		this.bufferVal = 0;
 		switch(tmpmode)
 		{
-			case -1: // rx data from bus
+			case IN: // rx data from bus
 				this.mode = -1;
 				console.log(this.valDisp[1]);
 				$(this.valDisp[1]).addClass("rx_from_bus_active");
 				$(this.valDisp[2]).removeClass("tx_to_bus_active");
 				break;
-			case 0: // disconnected from bus
+			case DC: // disconnected from bus
 				this.mode = 0;
 				$(this.valDisp[1]).removeClass("rx_from_bus_active");
 				$(this.valDisp[2]).removeClass("tx_to_bus_active");
 				break;
-			case 1: // tx data to bus
+			case OUT: // tx data to bus
 				this.mode = 1;
 				console.log(this.valDisp[2]);
 				$(this.valDisp[2]).addClass("tx_to_bus_active");
@@ -479,14 +504,22 @@ class Register
 		return this.storedVal;
 	}
 
-	rxValue()
+	getBuffer()
 	{
-		this.setValue(this.systembus.getValue());
+		return this.bufferVal;
 	}
 
-	txValue()
+	rxValue(mask = this.maxvalue)
 	{
-		return this.systembus.setValue(this.getValue());
+		this.setValue(this.systembus.getValue() & mask);
+	}
+
+	setBuffer(mask = this.maxvalue)
+	{
+		if(this.mode = OUT)
+			this.bufferVal = this.getValue() & mask;
+		else
+			this.bufferVal = 0;
 	}
 
 	incValue()
